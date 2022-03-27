@@ -24,14 +24,14 @@ import csv  # library used to handle CSV files
 from os import path
 import re  # Regex parsing, to help clean up the scraped data
 import itertools  # Used for de-nesting nested lists
-
+from matplotlib import pyplot as plt # Used for plotting the data
 
 # X TODO: determine how many samples you need to make to get the 99% confidence interval and +- 2 WPM ~~ 4022 samples
 # X TODO: import random module, and use it to randomly sample the data from the website (at a random route between 1 and 6311 (Not visited!), for however many samples you need)
 # X TODO: covert the sampled data into a CSV, save the CSV in the same directory as this file
 # X TODO: get the keyhero sample data (4022 samples) from about 2900 pages+ (Might take a long time!). You will need to debug all the functions leading up to this as well.
 # X TODO: add in confidence interval calculations
-# TODO: use matplotlib to generate pretty plots for the output of the csv file
+# X TODO: use matplotlib to generate pretty plots for the output of the csv file
 # TODO: add unit tests in another file, so that I can clean up this file
 
 # This statistics function gives the mean of the sample
@@ -225,7 +225,7 @@ def main():
             for row in csvreader:
                 rows.append(row)
 
-        # Calculate Min, Max, Median, Mean, Variance, and the Standard Deviation for the data
+        # Calculate Min, Max, Median, Mean, Variance, and the Standard Deviation for the data, and display the results in the console
         d = []
         for row in range(len(rows)):
             d.append(float(rows[row][2]))
@@ -245,6 +245,15 @@ def main():
         print("Mean of wpm:               ", round(mean_, 4))
         print("Variance of wpm:           ", round(variance(d), 4))
         print("Standard Deviation of wpm: ", round(std, 4))
+
+        # Display a chart of the distribution of WPM for the sample
+
+        plt.hist(d, bins=200,edgecolor="black")
+        plt.title("WPM Distribution")
+        plt.xlabel("WPM")
+        plt.ylabel("WPM Occurrence")
+        plt.tight_layout()
+        plt.show()
 
     else:  # If a csv does not exist, then gather the data from the Corpus and output it to CSV in this directory
         # field names
