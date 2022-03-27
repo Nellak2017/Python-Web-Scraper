@@ -23,7 +23,7 @@ import random  # library used to generate random numbers for the data sampling
 import csv  # library used to handle CSV files
 from os import path
 import re  # Regex parsing, to help clean up the scraped data
-import itertools # Used for de-nesting nested lists
+import itertools  # Used for de-nesting nested lists
 
 
 # X TODO: determine how many samples you need to make to get the 99% confidence interval and +- 2 WPM ~~ 4022 samples
@@ -32,11 +32,11 @@ import itertools # Used for de-nesting nested lists
 # X TODO: get the keyhero sample data (4022 samples) from about 2900 pages+ (Might take a long time!). You will need to debug all the functions leading up to this as well.
 # X TODO: add in confidence interval calculations
 # TODO: use matplotlib to generate pretty plots for the output of the csv file
+# TODO: add unit tests in another file, so that I can clean up this file
 
 # This statistics function gives the mean of the sample
 def mean(data):
     return sum(data) / len(data)
-
 
 # This statistics function gives the median of the data
 def median(data):
@@ -46,18 +46,9 @@ def median(data):
     else:
         return mean([sortedData[int(len(data) / 2)], sortedData[int(len(data) / 2 + 1)]])
 
-
-'''
-# Test Median
-print(median([3,2,1]))
-print(median([4,3,2,1]))
-'''
-
-
 # This statistics function gives the range of the sample
 def statRange(data):
     return max(data) - min(data)
-
 
 # This statistics function gives the variance of the sample
 def variance(data):
@@ -67,33 +58,18 @@ def variance(data):
         variance += (i - meanData) ** 2
     return variance / (len(data) - 1)
 
-
 # This statistics function returns the standard deviation of a list of numbers
 def standard_deviation(data):
     return variance(data) ** .5
-
-
-'''
-# Test standard_deviation
-print(standard_deviation([1,2,3,4,2,3,4,10,5,7,8,11]))
-'''
-
 
 # This statistics function returns the 99% confidence interval range [a,b], given sample size, sample mean, sample standard deviation
 # Note: I could generalize this to include any confidence interval, however, I only need 99% confidence intervals for this experiment
 def confidence99(n, mean, std):
     E = 2.5758 * (std/(n**.5))
-    return [mean-E,mean+E]
-
-
-'''
-# Test confidence99
-print(confidence99(500,51.43,20.3398))
-'''
+    return [mean-E, mean+E]
 
 # This will generate a map containing pages with random indices for each page, up to data_points number of total indices
-def randomSampleGenerator(data_points, number_of_pages,
-                          page_len):  # data_points:int , number_of_pages:int, page_len:int
+def randomSampleGenerator(data_points, number_of_pages, page_len):  # data_points:int , number_of_pages:int, page_len:int
     rand_indices = {}  # {int:page:[]}
     num_pages = list(range(1, number_of_pages))
     num_indices_page = list(range(1, page_len + 1))
@@ -102,40 +78,41 @@ def randomSampleGenerator(data_points, number_of_pages,
 
     for rand in range(data_points):
         page = random.choice(num_pages)  # choose a random page
-        rand_page_index = random.choice(num_indices_page)  # choose a random page index [1,50]
+        # choose a random page index [1,50]
+        rand_page_index = random.choice(num_indices_page)
 
-        page_keys = list(rand_indices.keys())  # Gets all the keys of the map of pages with random indices
+        # Gets all the keys of the map of pages with random indices
+        page_keys = list(rand_indices.keys())
 
         if page in page_keys:  # if chosen page is in the map
             map_val = rand_indices[page]  # memoize the map value at key = page
 
             if len(map_val) >= page_len:  # if the page is full
-                full_pages[page] = True  # set that page to be True in full_pages memo
+                # set that page to be True in full_pages memo
+                full_pages[page] = True
                 for candidate_page in page_keys:  # loop through the keys of the map
-                    new_map_val = rand_indices[candidate_page]  # memoize map value at key = candidate_page
+                    # memoize map value at key = candidate_page
+                    new_map_val = rand_indices[candidate_page]
 
                     if len(new_map_val) < page_len:  # if the next page isn't full
                         new_rand_page_index = random.choice(num_indices_page)  # choose a new random index
                         if new_rand_page_index in new_map_val:  # if the new random index is in the map for candidate_page
                             while new_rand_page_index in new_map_val:
-                                new_rand_page_index = random.choice(
-                                    num_indices_page)  # generate a new random number until you can find one that isn't in the map
-                            new_map_val.append(
-                                new_rand_page_index)  # Then add the random index to the end of the page in the map
+                                new_rand_page_index = random.choice(num_indices_page)  # generate a new random number until you can find one that isn't in the map
+                            new_map_val.append(new_rand_page_index)  # Then add the random index to the end of the page in the map
                             break
                         else:  # if the new random index is not in the map for candidate_page
-                            new_map_val.append(
-                                new_rand_page_index)  # Then add the random index to the end of the page in the map
+                            new_map_val.append(new_rand_page_index)  # Then add the random index to the end of the page in the map
                             break
                     elif len(new_map_val) >= page_len:  # if the next page is full
-                        full_pages[candidate_page] = True  # set that page to be True in full_pages memo
+                        # set that page to be True in full_pages memo
+                        full_pages[candidate_page] = True
                 # if you got here, it means all the pages in the map are full
-                t = sum(list(map(len, list(rand_indices.values()))))  # Placed here for the debugger
-                if all(list(
-                        full_pages.values())):  # check and make sure all pages are full and the checksum is correct before proceeding
+                # Placed here for the debugger
+                t = sum(list(map(len, list(rand_indices.values()))))
+                if all(list(full_pages.values())):  # check and make sure all pages are full and the checksum is correct before proceeding
                     # you want to check and see if you can generate a new page in the map and put in a value
-                    if len(
-                            page_keys) < number_of_pages - 1:  # you can make a new key value pair iff the len of the map is less than the number of pages
+                    if len(page_keys) < number_of_pages - 1:  # you can make a new key value pair iff the len of the map is less than the number of pages
                         # generate new key value pair, by using the while loop algorithm
                         new_rand_page = random.choice(num_pages)
                         if new_rand_page in page_keys:
@@ -146,42 +123,35 @@ def randomSampleGenerator(data_points, number_of_pages,
                     elif t == (page_len * (number_of_pages - 1)):
                         return rand_indices
 
-
             else:  # if the page is not full
                 # generate a new random number until you can find one that isn't in the map
                 new_map_val = rand_indices[page]
                 new_rand_page_index = random.choice(num_indices_page)
                 if new_rand_page_index in new_map_val:
                     while new_rand_page_index in new_map_val:
-                        new_rand_page_index = random.choice(
-                            num_indices_page)  # generate a new random number until you can find one that isn't in the map, break the loop
+                        new_rand_page_index = random.choice(num_indices_page)  # generate a new random number until you can find one that isn't in the map, break the loop
                     new_map_val.append(new_rand_page_index)
                 else:
                     new_map_val.append(new_rand_page_index)
 
         else:  # if chosen page is not in the map
-            rand_indices[page] = [rand_page_index]  # Will create rand_indices = {..., page:[rand_page_index], ...}
+            # Will create rand_indices = {..., page:[rand_page_index], ...}
+            rand_indices[page] = [rand_page_index]
 
     return rand_indices
-
-
-'''
-# Test random sample generator
-a = randomSampleGenerator(4022, 5925, 50)
-print(a)
-print(len(a))
-'''
-
 
 # data row format: [Number:{data number}, String:{userName}, Number:{wordsPerMinute}, Number:{numberOfGames}, String:{Layout}]
 # This function gets data from a page in our corpus and returns a list of the data
 # See also: https://realpython.com/beautiful-soup-web-scraper-python/
 def getPageData(pageNum):
-    li = []  # cleaned data for every row in every page. Each element is a string. If you want to use the data, you must put it in the format expected.
+    # cleaned data for every row in every page. Each element is a string. If you want to use the data, you must put it in the format expected.
+    li = []
     Query = "?page=" + str(pageNum) + "&games=0"
-    URL = "https://www.keyhero.com/topplayers/" + Query  # base URL to be scraped + the actual route
+    # base URL to be scraped + the actual route
+    URL = "https://www.keyhero.com/topplayers/" + Query
 
-    page = requests.get(URL)  # GET request to the URL. Returns the HTML of the page requested.
+    # GET request to the URL. Returns the HTML of the page requested.
+    page = requests.get(URL)
     soup = BeautifulSoup(page.content, "html.parser")
 
     for item in soup.select("tr"):
@@ -195,36 +165,34 @@ def getPageData(pageNum):
                 t.append(v[td].strip())
 
         # See also: https://pythex.org/
-        t[0] = int(re.sub("[^0-9.]", "", t[0]))  # Turn player Id into int and filter A-Z out
-        t[2] = float(re.sub("[^0-9.]", "", t[2]))  # Turn WPM into float and filter A-Z out
+        # Turn player Id into int and filter A-Z out
+        t[0] = int(re.sub("[^0-9.]", "", t[0]))
+        # Turn WPM into float and filter A-Z out
+        t[2] = float(re.sub("[^0-9.]", "", t[2]))
         if len(re.sub("[^0-9.]", "", t[3])) == 0:
             t[3] = int(1)  # if number of games is invalid, count it as 0
             # 3. put the cleaned string into li, this is your page data
             li.append(t)
         else:
-            t[3] = int(re.sub("[^0-9.]", "", t[3]))  # Turn games number into int and filter A-Z out
+            # Turn games number into int and filter A-Z out
+            t[3] = int(re.sub("[^0-9.]", "", t[3]))
             # 3. put the cleaned string into li, this is your page data
             li.append(t)
 
     return li
 
-
-'''
-# Test getPageData
-print(getPageData(2))
-'''
-
-
 # This will efficiently randomly sample our corpus, getting all the data for a page before moving on to the next page
 # Returns a list of the randomly sampled data
-def randomSample(map):  # input --> map: {page1:[indices to sample], pagen: [indices to sample]}
+# input --> map: {page1:[indices to sample], pagen: [indices to sample]}
+def randomSample(map):
     rand_vals = []  # [[1,'user',100.00,1,'QWERTY',...],[...]]
     rand_indices = map  # {1:[1,4,5],4:[1,5],...}
     # We must loop over the rand_indices, and pull the relevant data from each page
     i = 1
     for page in rand_indices.keys():
-        print("Page: ", page,", (", i ," of ", len(rand_indices.keys()), "), ", str(round(((i/len(rand_indices.keys()))*100), 3)) ,"% complete",sep="")
-        i += 1 # Just used for knowing how many pages have been done already
+        print("Page: ", page, ", (", i, " of ", len(rand_indices.keys()), "), ", str(
+            round(((i/len(rand_indices.keys()))*100), 3)), "% complete", sep="")
+        i += 1  # Just used for knowing how many pages have been done already
         # Get the page data
         data = getPageData(page)
         # Get the information we need from the page
@@ -232,25 +200,14 @@ def randomSample(map):  # input --> map: {page1:[indices to sample], pagen: [ind
 
     return rand_vals
 
-
-'''
-# Test randomSample
-
-print("a:")
-print(a) # 4022, 5925, 50
-print("")
-print(randomSample(a))
-print("")
-'''
-
-
 # Driver for this application, it will return the filled out CSV file with all the scraped data if there wasn't one already in this directory
 def main():
     # CSV file name
     filename = "keyhero_sample_data.csv"
 
     # Check if csv file is created
-    if path.exists("keyhero_sample_data.csv"):  # If a csv exists, then read the data from it and perform analysis on it
+    # If a csv exists, then read the data from it and perform analysis on it
+    if path.exists("keyhero_sample_data.csv"):
         # initializing the titles and rows list
         fields = []
         rows = []
@@ -269,7 +226,6 @@ def main():
                 rows.append(row)
 
         # Calculate Min, Max, Median, Mean, Variance, and the Standard Deviation for the data
-
         d = []
         for row in range(len(rows)):
             d.append(float(rows[row][2]))
@@ -277,18 +233,18 @@ def main():
         mean_ = mean(d)
         std = standard_deviation(d)
         size = len(d)
-        conf = confidence99(size,mean_,std)
-        E = round((conf[1]-conf[0])/2,4)
-        Eperc = round((E / mean_)*100,2)
+        conf = confidence99(size, mean_, std)
+        E = round((conf[1]-conf[0])/2, 4)
+        Eperc = round((E / mean_)*100, 2)
         print("Size of sample:            ", size)
-        print("99% confidence interval:    ", round(mean_,2)," WPM +- ",E," WPM (+-",Eperc,"%) [",round(conf[0],3)," WPM - ",round(conf[1],3)," WPM]", sep="")
+        print("99% confidence interval:    ", round(mean_, 2), " WPM +- ", E, " WPM (+-",
+              Eperc, "%) [", round(conf[0], 3), " WPM - ", round(conf[1], 3), " WPM]", sep="")
         print("Min of wpm:                ", min(d))
         print("Max of wpm:                ", max(d))
-        print("Median of wpm:             ", round(median(d),4))
-        print("Mean of wpm:               ", round(mean_,4))
-        print("Variance of wpm:           ", round(variance(d),4))
-        print("Standard Deviation of wpm: ", round(std,4))
-
+        print("Median of wpm:             ", round(median(d), 4))
+        print("Mean of wpm:               ", round(mean_, 4))
+        print("Variance of wpm:           ", round(variance(d), 4))
+        print("Standard Deviation of wpm: ", round(std, 4))
 
     else:  # If a csv does not exist, then gather the data from the Corpus and output it to CSV in this directory
         # field names
@@ -296,7 +252,8 @@ def main():
 
         # data rows of csv file, given by scraping the Keyhero corpus. See also: https://www.keyhero.com/topplayers/
         a = randomSampleGenerator(4022, 5925, 49)
-        rows = list(itertools.chain.from_iterable(randomSample(a)))  # use itertools to de-nest the list of lists of lists down to just a list of lists
+        # use itertools to de-nest the list of lists of lists down to just a list of lists
+        rows = list(itertools.chain.from_iterable(randomSample(a)))
 
         # writing to CSV file
         with open(filename, 'w', newline='\n', encoding='utf-8') as csvfile:
