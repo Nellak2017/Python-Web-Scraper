@@ -17,6 +17,8 @@ A custom built Web Scraper I am using to gather data for statistical analysis of
 This project is being used for my introduction to Statistics class at UCO. In this project, I gathered 4022 random samples of typing speeds from Keyhero.com.
 The samples indicate a population average typing speed of 47.07 WPM +- 0.9176 WPM (+-1.95%) [46.15 WPM - 47.985 WPM] with a 99% confidence interval. 
 
+![Keyhero WPM Distribution Image](https://github.com/Nellak2017/Python-Web-Scraper/blob/main/Keyhero WPM Distribution Image.PNG)
+
 ## How to use this project
 
 To use this project, you must download this github repository, a Python interpreter, and the pip packages used in the project. 
